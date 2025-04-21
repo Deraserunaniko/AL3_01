@@ -1,9 +1,9 @@
 #pragma once
 #include "KamataEngine.h"
+#include "Player.h"
 
 // ゲームシーン
 class GameScene {
-
 public:
 	~GameScene();
 
@@ -25,4 +25,7 @@ private:
 	KamataEngine::WorldTransform worldTransform_;
 	// カメラ
 	KamataEngine::Camera camera_;
+	//自キャラ
+	Player* player_ = nullptr;
+
 };
