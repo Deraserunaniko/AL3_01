@@ -13,6 +13,6 @@ public:
 private:
 	KamataEngine ::WorldTransform worldTransform_;
 	KamataEngine ::Model* model_ = nullptr;
-	uint32_t textureHandle_ = 0;
-	KamataEngine::Camera* camera_ ;
+	uint32_t textureHandle_ = 0u;
+	KamataEngine::Camera* camera_= nullptr ;
 };
