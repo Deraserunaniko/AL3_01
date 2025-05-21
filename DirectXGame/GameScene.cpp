@@ -7,7 +7,7 @@ GameScene::~GameScene() {
 	delete model_;
 	delete player_;
 	delete debugCamera_;
-	/*delete modelSkydome_;*/
+	delete modelSkydome_;
 
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
@@ -23,7 +23,7 @@ void GameScene::Intialize() {
 
 	modelBlock_ = Model::CreateFromOBJ("cube");
 
-	/*modelSkydome_ = Model::CreateFromOBJ("skydome", true);*/
+	modelSkydome_ = Model::CreateFromOBJ("SkyDome", true);
 
 	camera_.Initialize();
 
@@ -32,10 +32,10 @@ void GameScene::Intialize() {
 
 	player_ = new Player();
 
-	
+	skydome_ = new SkyDome();
 
 	player_->Initialize(model_, textureHandle_, &camera_);
-	
+	skydome_->Initialize(modelSkydome_, textureHandle_, &camera_);
 
 	// 要素数
 	const uint32_t kNumBlockVirtical = 10;
@@ -64,7 +64,7 @@ void GameScene::Intialize() {
 
 void GameScene::Update() {
 	player_->Update();
-	
+	skydome_->Update();
 	debugCamera_->Update();
 
 #ifdef _DEBUG
@@ -113,7 +113,7 @@ void GameScene::Draw() {
 		}
 	}
 
-	
+	skydome_->Draw();
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
 			if (!worldTransformBlock)
