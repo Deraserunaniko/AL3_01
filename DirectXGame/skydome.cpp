@@ -1,4 +1,4 @@
-#include "SkyDome.h"
+#include "skyDome.h"
 
 using namespace KamataEngine;
 
