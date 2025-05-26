@@ -16,9 +16,9 @@ void GameScene::Initialize() {
 
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
 
-	skydome_ = new Skydome();
+	skydome_ = new SkyDome();
 
-	skydome_->Initialize(modelSkydome_, &camera_);
+	skydome_->Initialize(modelSkydome_,textureHandle_,&camera_);
 
 	mapChipField_ = new MapChipField;
 	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");

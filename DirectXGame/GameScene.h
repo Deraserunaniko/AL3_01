@@ -20,7 +20,7 @@ class GameScene {
 
 	Model* modelPlayer_ = nullptr;
 
-	Skydome* skydome_ = nullptr;
+	SkyDome* skydome_ = nullptr;
 
 private:
 	uint32_t textureHandle_ = 0;
