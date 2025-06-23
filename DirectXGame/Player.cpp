@@ -1,80 +1,129 @@
-#pragma once
-#include "KamataEngine.h"
-#include "Math.h"
+#define NOMINMAX
+#include "Player.h"
 #include "UpData.h"
+#include "numbers"
+#include <algorithm>
 
 using namespace KamataEngine;
 
-class Player {
-public:
-	// 左右
-	enum class LRDirection {
-		kRight,
-		kLeft,
-	};
+void Player::Initialize(KamataEngine::Model* model, Camera* camera, const Vector3& position) {
+	assert(model);
 
-	/// <summary>
-	/// 初期化
-	/// </summary>
-	void Initialize(Model* model_, Camera* camera_, const Vector3& position);
+	model_ = model;
+	camera_ = camera;
 
-	/// <summary>
-	/// 更新
-	/// </summary>
-	void UpDate();
+	worldTransform_.Initialize();
 
-	/// <summary>
-	/// 描画
-	/// </summary>
-	void Draw();
+	worldTransform_.translation_ = position;
 
-private:
-	// ワールド変換データ
-	WorldTransform worldTransform_;
+	// worldTransform_.translation_ = {5.0f, 5.0f, 0.0f};
 
-	// モデル
-	Model* model_ = nullptr;
+	worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
+}
 
-	// テクスチャハンドル
-	//  uint32_t textureHandle_ = 0u;
+void Player::UpDate() {
+	// for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
+	// 	for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
+	// 		if (!worldTransformBlock)
+	// 			continue;
+	// 		// アフィン変換行列の生成
+	// 		worldTransformBlock->matWorld_ = math_->MakeAffineMatrix(worldTransformBlock->scale_, worldTransformBlock->rotation_, worldTransformBlock->translation_);
+	//
+	// 		// 定数バッファに転送する
+	// 		worldTransformBlock->TransferMatrix();
+	// 	}
+	//
 
-	Camera* camera_ = nullptr;
+	// 移動入力
+	// 接地状態
 
-	//Math* math_ = nullptr;
+	// 接地判定
+	// アフィン変換行列の生成
+	worldTransform_.matWorld_ = math_->MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
 
-	UpData* upData = nullptr;
+	// 定数バッファに転送する
+	worldTransform_.TransferMatrix();
+	if (onGround_) {
+		if (Input::GetInstance()->PushKey(DIK_RIGHT) || Input::GetInstance()->PushKey(DIK_LEFT)) {
+			Vector3 acceleration = {};
+			if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
+				if (velocity_.x < 0.0f) {
+					velocity_.x *= (1.0f - kAttenuation);
+				}
+				acceleration.x += kAcceleration;
+				if (lrDirection_ != LRDirection::kRight) {
+					lrDirection_ = LRDirection::kRight;
 
-	Vector3 velocity_ = {};
+					turnFirstRotationY_ = worldTransform_.rotation_.y;
+					turnTimer_ = kTimeTurn;
+				}
 
-	static inline const float kAcceleration = 0.05f;
+			} else if (Input::GetInstance()->PushKey(DIK_LEFT)) {
+				if (velocity_.x > 0.0f) {
+					velocity_.x *= (1.0f - kAttenuation);
+				}
+				acceleration.x -= kAcceleration;
+				if (lrDirection_ != LRDirection::kLeft) {
+					lrDirection_ = LRDirection::kLeft;
 
-	LRDirection lrDirection_ = LRDirection::kRight;
+					turnFirstRotationY_ = worldTransform_.rotation_.y;
+					turnTimer_ = kTimeTurn;
+				}
+			}
+			velocity_ = math_->Add(velocity_, acceleration);
 
-	static inline const float kAttenuation = 0.05f;
+			velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
+		} else {
+			velocity_.x *= (1.0f - kAcceleration);
+		}
+		if (Input::GetInstance()->PushKey(DIK_UP)) {
+			velocity_ = math_->Add(Vector3(0, kJumpAcceleration, 0), velocity_);
+		}
+	} else {
+		velocity_ = math_->Add(Vector3(0, -kGravityAcceleration / 60, 0), velocity_);
+		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
+	}
 
-	// 最大落下速度(下方向)
-	static inline const float kLimitRunSpeed = 0.1f;
+	worldTransform_.translation_ = math_->Add(velocity_, worldTransform_.translation_);
+	upData->WorldTransformUpData(worldTransform_);
 
-	// ジャンプ初速(上方向)
-	static inline const float kJumpAcceleration = 0.5f;
+	bool landing = false;
 
-	// std::vector<std::vector<WorldTransform*>> worldTransformBlocks_;
+	if (velocity_.y < 0) {
+		if (worldTransform_.translation_.y <= 1.0f) {
+			landing = true;
+		}
+	}
 
-	// 旋回開始時の角度
-	float turnFirstRotationY_ = 0.0f;
+	if (onGround_) {
+		if (velocity_.y > 0.0f) {
+			onGround_ = false;
+		}
+	} else {
+		if (landing) {
+			worldTransform_.translation_.y = 1.0f;
 
-	// 旋回タイマー
-	float turnTimer_ = 0.0f;
+			velocity_.x *= (1.0f - kAttenuation);
 
-	// 旋回時間<秒>
-	static inline const float kTimeTurn = 0.3f;
+			velocity_.y = 0.0f;
 
-	// 接地状態フラグ
-	bool onGround_ = true;
+			onGround_ = true;
+		}
+	}
+	if (turnTimer_ > 0.0f) {
+		turnTimer_ = std::max(turnTimer_ - (1.0f / 60.0f), 0.0f);
+		float destinationRotationYTable[] = {std::numbers::pi_v<float> / 2.0f, std::numbers::pi_v<float> * 3.0f / 2.0f};
+		float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
+		worldTransform_.rotation_.y = math_->EaseInOut(destinationRotationY, turnFirstRotationY_, turnTimer_ / kTimeTurn);
+	}
+}
 
-	// 重力加速度(下方向)
-	static inline const float kGravityAcceleration = 1.0f;
+void Player::Draw() {
+	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
-	// 最大落下速度(下方向)
-	static inline const float kLimitFallSpeed = 1.0f;
-};
+	Model::PreDraw(dxCommon->GetCommandList());
+
+	model_->Draw(worldTransform_, *camera_);
+
+	Model::PostDraw();
+}
