@@ -1,18 +1,21 @@
-#include "skyDome.h"
+#include "Skydome.h"
 
-using namespace KamataEngine;
-
-void SkyDome::Initialize(KamataEngine::Model* model, uint32_t textureHandle, KamataEngine::Camera* camera) {
-
-	textureHandle_ = textureHandle;
-
+void Skydome::Initialize(Model* model, Camera* camera) {
+	assert(model);
 	model_ = model;
-
-	worldTransform_.Initialize();
-
 	camera_ = camera;
+	worldTransform_.Initialize();
 }
 
-void SkyDome::Update() { worldTransform_.TransferMatrix(); }
+void Skydome::Update() { worldTransform_.TransferMatrix(); }
 
-void SkyDome::Draw() { model_->Draw(worldTransform_, *camera_); }
+void Skydome::Draw() {
+
+	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
+
+	Model::PreDraw(dxCommon->GetCommandList());
+
+	model_->Draw(worldTransform_, *camera_);
+
+	Model::PostDraw();
+}

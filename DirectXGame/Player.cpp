@@ -1,27 +1,80 @@
-#include "Player.h"
-#include "MyMath.h"
-#include "cassert"
+#pragma once
+#include "KamataEngine.h"
+#include "Math.h"
+#include "UpData.h"
 
-void Player::Initialize(Model* model, Camera* camera) {
-	// nullポインタチェック
-	assert(model);
-	// 引数として受け取ったデータをメンバ変数に記録する
-	model_ = model;
-	camera_ = camera;
-	// ワールド変換の初期化
-	worldTransform_.Initialize();
-}
+using namespace KamataEngine;
 
-void Player::Update() {
-	for (std::vector<WorldTransform*>& worldTransformPlayerLine : worldTransformPlayer_) {
-		for (WorldTransform* worldTransformPlayer : worldTransformPlayerLine) {
-			if (!worldTransformPlayer) {
-				continue;
-			}
-			worldTransformPlayer->matWorld_ = MakeAffineMatrix(worldTransformPlayer->scale_, worldTransformPlayer->rotation_, worldTransformPlayer->translation_);
-			worldTransformPlayer->TransferMatrix();
-		}
-	}
-}
+class Player {
+public:
+	// 左右
+	enum class LRDirection {
+		kRight,
+		kLeft,
+	};
 
-void Player::Draw() { model_->Draw(worldTransform_, *camera_); }
+	/// <summary>
+	/// 初期化
+	/// </summary>
+	void Initialize(Model* model_, Camera* camera_, const Vector3& position);
+
+	/// <summary>
+	/// 更新
+	/// </summary>
+	void UpDate();
+
+	/// <summary>
+	/// 描画
+	/// </summary>
+	void Draw();
+
+private:
+	// ワールド変換データ
+	WorldTransform worldTransform_;
+
+	// モデル
+	Model* model_ = nullptr;
+
+	// テクスチャハンドル
+	//  uint32_t textureHandle_ = 0u;
+
+	Camera* camera_ = nullptr;
+
+	//Math* math_ = nullptr;
+
+	UpData* upData = nullptr;
+
+	Vector3 velocity_ = {};
+
+	static inline const float kAcceleration = 0.05f;
+
+	LRDirection lrDirection_ = LRDirection::kRight;
+
+	static inline const float kAttenuation = 0.05f;
+
+	// 最大落下速度(下方向)
+	static inline const float kLimitRunSpeed = 0.1f;
+
+	// ジャンプ初速(上方向)
+	static inline const float kJumpAcceleration = 0.5f;
+
+	// std::vector<std::vector<WorldTransform*>> worldTransformBlocks_;
+
+	// 旋回開始時の角度
+	float turnFirstRotationY_ = 0.0f;
+
+	// 旋回タイマー
+	float turnTimer_ = 0.0f;
+
+	// 旋回時間<秒>
+	static inline const float kTimeTurn = 0.3f;
+
+	// 接地状態フラグ
+	bool onGround_ = true;
+
+	// 重力加速度(下方向)
+	static inline const float kGravityAcceleration = 1.0f;
+
+	// 最大落下速度(下方向)
+	static inline const float kLimitFallSpeed = 1.0f;
+};

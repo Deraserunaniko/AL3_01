@@ -1,43 +1,61 @@
 #pragma once
-#include "KamataEngine.h"
 #include "MapChipField.h"
 #include "Player.h"
 #include "Skydome.h"
-#include <vector>
+#include <KamataEngine.h>
 
 using namespace KamataEngine;
 
+// ゲームシーン
 class GameScene {
-
-	KamataEngine::Model* model_ = nullptr;
-
-	KamataEngine::Camera camera_;
-	Player* player_ = nullptr;
-
-	std::vector<std::vector<WorldTransform*>> worldTransformBlocks_;
-
-	KamataEngine::Model* modelSkydome_ = nullptr;
-
-	KamataEngine::Model* modelPlayer_ = nullptr;
-
-	SkyDome* skydome_ = nullptr;
-
-private:
-	uint32_t textureHandle_ = 0;
-	KamataEngine::Model* modelBlock_;
-	DebugCamera* debugCamera_ = nullptr;
-	bool isDebugCameraActive_ = false;
-	// マップチップフィールド
-	MapChipField* mapChipField_;
-
 public:
 	// 初期化
 	void Initialize();
-	~GameScene();
+
 	// 更新
 	void Update();
+
 	// 描画
 	void Draw();
 
-	void GenerateBloacks();
+	~GameScene();
+
+	void GenerateBlocks();
+
+private:
+	////テクスチャーハンドル
+	uint32_t textureHandle_ = 0;
+
+	Sprite* sprite_ = nullptr;
+
+	//////3Dモデル
+	Model* model_ = nullptr;
+
+	// ブロックの3Dモデル
+	Model* blockModel_ = nullptr;
+
+	WorldTransform worldTransform_;
+
+	////カメラ
+	Camera camera_;
+
+	std::vector<std::vector<WorldTransform*>> worldTransformBlocks_;
+
+	DebugCamera* debugCamera_ = nullptr;
+
+	// 自キャラ
+	Player* player_ = nullptr;
+
+	Math* math_ = nullptr;
+
+	// デバッグカメラ有効
+	bool isDebugCameraActive_ = false;
+
+	Skydome* skydome_ = nullptr;
+
+	Model* modelSkydome_ = nullptr;
+
+	Model* modelPlayer_ = nullptr;
+
+	MapChipField* mapChipField_;
 };
