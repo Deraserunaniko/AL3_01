@@ -94,7 +94,7 @@ void GameScene::Update() {
 
 #ifdef _DEBUG
 	// デバックの時Cキーを押すと状態が反転する
-	if (Input::GetInstance()->TriggerKey(DIK_C)) {
+	if (Input::GetInstance()->TriggerKey(DIK_0)) {
 		isDebugCameraActive_ = !isDebugCameraActive_;
 	}
 #endif // ! _DEBUG
