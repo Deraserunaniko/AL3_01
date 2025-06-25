@@ -106,12 +106,14 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MapChipField.cpp" />
-    <ClCompile Include="MyMath.cpp" />
+    <ClCompile Include="Math.cpp" />
     <ClCompile Include="Player.cpp" />
-    <ClCompile Include="skydome.cpp" />
+    <ClCompile Include="Skydome.cpp" />
+    <ClCompile Include="UpData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\TerrainPS.hlsl">
@@ -189,11 +191,13 @@
     <None Include="Resources\shaders\Sprite.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CameraController.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="MapChipField.h" />
-    <ClInclude Include="MyMath.h" />
+    <ClInclude Include="Math.h" />
     <ClInclude Include="Player.h" />
-    <ClInclude Include="skydome.h" />
+    <ClInclude Include="Skydome.h" />
+    <ClInclude Include="UpData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

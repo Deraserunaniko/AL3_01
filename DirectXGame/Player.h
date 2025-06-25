@@ -1,27 +1,84 @@
 #pragma once
-#include <KamataEngine.h>
-
-#pragma once
 #include "KamataEngine.h"
-#include <vector>
+#include "Math.h"
+#include "UpData.h"
 
 using namespace KamataEngine;
 
-// 自キャラ
 class Player {
-private:
-	WorldTransform worldTransform_;
-	Model* model_ = nullptr;
-	Camera* camera_ = nullptr;
-	uint32_t textureHandle_ = 0u;
-
-	std::vector<std::vector<WorldTransform*>> worldTransformPlayer_;
-
 public:
-	// 初期化
-	void Initialize(Model* model, Camera* camera);
-	// 更新
-	void Update();
-	// 描画
+	// 左右
+	enum class LRDirection {
+		kRight,
+		kLeft,
+	};
+
+	/// <summary>
+	/// 初期化
+	/// </summary>
+	void Initialize(Model* model_, Camera* camera_, const Vector3& position);
+
+	/// <summary>
+	/// 更新
+	/// </summary>
+	void UpDate();
+
+	/// <summary>
+	/// 描画
+	/// </summary>
 	void Draw();
+
+	const WorldTransform& GetWorldTransform() const { return worldTransform_; }
+
+	const Vector3& GetVelocity() const { return velocity_; }
+
+private:
+	// ワールド変換データ
+	WorldTransform worldTransform_;
+
+	// モデル
+	Model* model_ = nullptr;
+
+	// テクスチャハンドル
+	//  uint32_t textureHandle_ = 0u;
+
+	Camera* camera_ = nullptr;
+
+	// Math* math_ = nullptr;
+
+	UpData* upData = nullptr;
+
+	Vector3 velocity_ = {};
+
+	static inline const float kAcceleration = 0.2f;
+
+	LRDirection lrDirection_ = LRDirection::kRight;
+
+	static inline const float kAttenuation = 0.05f;
+
+	// 速度制限
+	static inline const float kLimitRunSpeed = 0.2f;
+
+	// ジャンプ初速(上方向)
+	static inline const float kJumpAcceleration = 0.5f;
+
+	// std::vector<std::vector<WorldTransform*>> worldTransformBlocks_;
+
+	// 旋回開始時の角度
+	float turnFirstRotationY_ = 0.0f;
+
+	// 旋回タイマー
+	float turnTimer_ = 0.0f;
+
+	// 旋回時間<秒>
+	static inline const float kTimeTurn = 0.3f;
+
+	// 接地状態フラグ
+	bool onGround_ = true;
+
+	// 重力加速度(下方向)
+	static inline const float kGravityAcceleration = 1.0f;
+
+	// 最大落下速度(下方向)
+	static inline const float kLimitFallSpeed = 1.0f;
 };
