@@ -129,9 +129,9 @@ private:
 
 	// 02_07 スライド14枚目
 	void CheckMapCollisionUp(CollisionMapInfo& info);
-	/*void CheckMapCollisionDown(CollisionMapInfo& info);
+	void CheckMapCollisionDown(CollisionMapInfo& info);
 	void CheckMapCollisionRight(CollisionMapInfo& info);
-	void CheckMapCollisionLeft(CollisionMapInfo& info);*/
+	void CheckMapCollisionLeft(CollisionMapInfo& info);
 
 	// 02_07 スライド17枚目
 	Vector3 CornerPosition(const Vector3& center, Corner corner);
