@@ -1,129 +1,138 @@
-#define NOMINMAX
-#include "Player.h"
+#pragma once
+#include "KamataEngine.h"
+#include "MapChipField.h"
+#include "Math.h"
 #include "UpData.h"
-#include "numbers"
-#include <algorithm>
+
+class MapChipField;
 
 using namespace KamataEngine;
 
-void Player::Initialize(KamataEngine::Model* model, Camera* camera, const Vector3& position) {
-	assert(model);
+class Player {
+public:
+	// 左右
+	enum class LRDirection {
+		kRight,
+		kLeft,
+	};
 
-	model_ = model;
-	camera_ = camera;
+	// 角 02_07スライド16枚目
+	enum Corner { kRightBottom, kLeftBottom, kRightTop, kLeftTop, kNumCorner };
 
-	worldTransform_.Initialize();
+	/// <summary>
+	/// 初期化
+	/// </summary>
+	void Initialize(Model* model_, Camera* camera_, const Vector3& position);
 
-	worldTransform_.translation_ = position;
+	/// <summary>
+	/// 更新
+	/// </summary>
+	void UpDate();
 
-	// worldTransform_.translation_ = {5.0f, 5.0f, 0.0f};
+	/// <summary>
+	/// 描画
+	/// </summary>
+	void Draw();
 
-	worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
-}
+	// getter(02_06スライド11枚目で追加)
+	const WorldTransform& GetWorldTransform() const { return worldTransform_; }
 
-void Player::UpDate() {
-	// for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
-	// 	for (WorldTransform*& worldTransformBlock : worldTransformBlockLine) {
-	// 		if (!worldTransformBlock)
-	// 			continue;
-	// 		// アフィン変換行列の生成
-	// 		worldTransformBlock->matWorld_ = MakeAffineMatrix(worldTransformBlock->scale_, worldTransformBlock->rotation_, worldTransformBlock->translation_);
-	//
-	// 		// 定数バッファに転送する
-	// 		worldTransformBlock->TransferMatrix();
-	// 	}
-	//
+	// 02_06スライド28枚目で追加
+	const Vector3& GetVelocity() const { return velocity_; }
 
-	// 移動入力
-	// 接地状態
+	// 02_07 スライド4枚目
+	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
 
-	// 接地判定
-	// アフィン変換行列の生成
-	worldTransform_.matWorld_ = MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
+private:
+	// ワールド変換データ
+	WorldTransform worldTransform_;
 
-	// 定数バッファに転送する
-	worldTransform_.TransferMatrix();
-	if (onGround_) {
-		if (Input::GetInstance()->PushKey(DIK_D) || Input::GetInstance()->PushKey(DIK_A)) {
-			Vector3 acceleration = {};
-			if (Input::GetInstance()->PushKey(DIK_D)) {
-				if (velocity_.x < 0.0f) {
-					velocity_.x *= (1.0f - kAttenuation);
-				}
-				acceleration.x += kAcceleration;
-				if (lrDirection_ != LRDirection::kRight) {
-					lrDirection_ = LRDirection::kRight;
+	// モデル
+	Model* model_ = nullptr;
 
-					turnFirstRotationY_ = worldTransform_.rotation_.y;
-					turnTimer_ = kTimeTurn;
-				}
+	// テクスチャハンドル
+	//  uint32_t textureHandle_ = 0u;
 
-			} else if (Input::GetInstance()->PushKey(DIK_A)) {
-				if (velocity_.x > 0.0f) {
-					velocity_.x *= (1.0f - kAttenuation);
-				}
-				acceleration.x -= kAcceleration;
-				if (lrDirection_ != LRDirection::kLeft) {
-					lrDirection_ = LRDirection::kLeft;
+	Camera* camera_ = nullptr;
 
-					turnFirstRotationY_ = worldTransform_.rotation_.y;
-					turnTimer_ = kTimeTurn;
-				}
-			}
-			velocity_ = Add(velocity_, acceleration);
+	// Math* math_ = nullptr;
 
-			velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
-		} else {
-			velocity_.x *= (1.0f - kAcceleration);
-		}
-		if (Input::GetInstance()->PushKey(DIK_SPACE)) {
-			velocity_ = Add(Vector3(0, kJumpAcceleration, 0), velocity_);
-		}
-	} else {
-		velocity_ = Add(Vector3(0, -kGravityAcceleration / 60, 0), velocity_);
-		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
-	}
+	UpData* upData = nullptr;
 
-	worldTransform_.translation_ = Add(velocity_, worldTransform_.translation_);
-	upData->WorldTransformUpData(worldTransform_);
+	Vector3 velocity_ = {};
 
-	bool landing = false;
+	// 02_05  フレームごとの加速度
+	static inline const float kAcceleration = 0.1f;
 
-	if (velocity_.y < 0) {
-		if (worldTransform_.translation_.y <= 1.0f) {
-			landing = true;
-		}
-	}
+	// 02_05 顔の向き
+	LRDirection lrDirection_ = LRDirection::kRight;
 
-	if (onGround_) {
-		if (velocity_.y > 0.0f) {
-			onGround_ = false;
-		}
-	} else {
-		if (landing) {
-			worldTransform_.translation_.y = 1.0f;
+	// 02_05 非入力時の摩擦係数
+	static inline const float kAttenuation = 0.05f;
 
-			velocity_.x *= (1.0f - kAttenuation);
+	// 速度制限
+	//  02_05 最高速度
+	static inline const float kLimitRunSpeed = 0.3f;
 
-			velocity_.y = 0.0f;
+	// std::vector<std::vector<WorldTransform*>> worldTransformBlocks_;
 
-			onGround_ = true;
-		}
-	}
-	if (turnTimer_ > 0.0f) {
-		turnTimer_ = std::max(turnTimer_ - (1.0f / 60.0f), 0.0f);
-		float destinationRotationYTable[] = {std::numbers::pi_v<float> / 2.0f, std::numbers::pi_v<float> * 3.0f / 2.0f};
-		float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
-		worldTransform_.rotation_.y = EaseInOut(destinationRotationY, turnFirstRotationY_, turnTimer_ / kTimeTurn);
-	}
-}
+	// 旋回開始時の角度
+	float turnFirstRotationY_ = 0.0f;
 
-void Player::Draw() {
-	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
+	// 旋回タイマー
+	float turnTimer_ = 0.0f;
 
-	Model::PreDraw(dxCommon->GetCommandList());
+	// 旋回時間<秒>
+	static inline const float kTimeTurn = 0.3f;
 
-	model_->Draw(worldTransform_, *camera_);
+	// 接地状態フラグ
+	bool onGround_ = true;
 
-	Model::PostDraw();
-}
+	// 02_05 ジャンプ定数もろもろ
+
+	// ジャンプ初速(上方向)
+	static inline const float kJumpAcceleration = 20.0f;
+
+	// 重力加速度(下方向)
+	static inline const float kGravityAcceleration = 0.98f;
+
+	// 最大落下速度(下方向)
+	static inline const float kLimitFallSpeed = 0.5f;
+
+	// 02_07 マップチップによるフィールド
+	MapChipField* mapChipField_ = nullptr;
+
+	// キャラクターの当たり判定サイズ
+	static inline const float kWidth = 0.8f;
+	static inline const float kHeight = 0.8f;
+
+	// 02_07スライド34枚目
+	static inline const float kBlank = 0.04f;
+
+	void InputMove();
+
+	// マップチップとの当たり判定情報
+	// 02_07 スライド12枚目
+	struct CollisionMapInfo {
+		// 天井衝突フラグ
+		bool ceiling = false;
+		// 着地フラグ
+		bool landing = false;
+		// 壁接触フラグ
+		bool hitWall = false;
+		// 移動量
+		Vector3 move;
+	};
+
+	// 02_07 スライド13枚目
+	void CheckMapCollision(CollisionMapInfo& info);
+
+	// 02_07 スライド14枚目
+	void CheckMapCollisionUp(CollisionMapInfo& info);
+	/*void CheckMapCollisionDown(CollisionMapInfo& info);
+	void CheckMapCollisionRight(CollisionMapInfo& info);
+	void CheckMapCollisionLeft(CollisionMapInfo& info);*/
+
+	// 02_07 スライド17枚目
+	Vector3 CornerPosition(const Vector3& center, Corner corner);
+};
