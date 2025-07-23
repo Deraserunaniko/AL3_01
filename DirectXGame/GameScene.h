@@ -24,7 +24,18 @@ public:
 
 	void GenerateBlocks();
 
+	// 02_10 16枚目 衝突判定と応答
+	void CheckAllCollisions();
+
 private:
+	enum class Phase {
+		kPlay, // ゲームプレイ
+		kDeath // デス演出
+	};
+
+	// 02_12 4枚目 ゲームの現在フェーズ（変数）
+	Phase phase_;
+
 	////テクスチャーハンドル
 	uint32_t textureHandle_ = 0;
 
@@ -68,5 +79,5 @@ private:
 
 	CameraController* CController_ = nullptr;
 
-	// 02_09 10枚目 エネミーモデル
+	std::list<Enemy*> enemies_;
 };

@@ -202,7 +202,6 @@ void Player::UpdateOnGround(const CollisionMapInfo& info) {
 			for (uint32_t i = 0; i < positionsNew.size(); ++i) {
 				positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
 			}
-
 			MapChipType mapChipType;
 			// 真下の当たり判定を行う
 			bool hit = false;
@@ -444,3 +443,35 @@ void Player::UpDate() {
 // worldTransform_.TransferMatrix();
 
 void Player::Draw() { model_->Draw(worldTransform_, *camera_); }
+
+// 02_10 10枚目
+Vector3 Player::GetWorldPosition() {
+
+	Vector3 worldPos;
+	// ワールド行列の平行移動成分を取得（ワールド座標）
+	worldPos.x = worldTransform_.matWorld_.m[3][0];
+	worldPos.y = worldTransform_.matWorld_.m[3][1];
+	worldPos.z = worldTransform_.matWorld_.m[3][2];
+	return worldPos;
+}
+
+// 02_10 14枚目
+AABB Player::GetAABB() {
+
+	Vector3 worldPos = GetWorldPosition();
+
+	AABB aabb;
+
+	aabb.min = {worldPos.x - kWidth / 2.0f, worldPos.y - kHeight / 2.0f, worldPos.z - kWidth / 2.0f};
+	aabb.max = {worldPos.x + kWidth / 2.0f, worldPos.y + kHeight / 2.0f, worldPos.z + kWidth / 2.0f};
+
+	return aabb;
+}
+
+// 02_10 21枚目
+void Player::OnCollision(const Enemy* enemy) {
+	(void)enemy;
+
+	// 02_12 12枚目 書き換え
+	isDead_ = true;
+}

@@ -1,12 +1,20 @@
 #pragma once
+#include "Enemy.h"
 #include "KamataEngine.h"
 #include "MapChipField.h"
 #include "Math.h"
 #include "UpData.h"
 
+#include <algorithm>
+#include <cassert>
+#include <numbers>
+
 class MapChipField;
 
 using namespace KamataEngine;
+
+// 02_10 21枚目
+class Enemy;
 
 class Player {
 public:
@@ -42,6 +50,18 @@ public:
 
 	// 02_07 スライド4枚目
 	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
+
+	// 02_10 10枚目 ワールド座標を取得
+	Vector3 GetWorldPosition();
+
+	// AABBを取得
+	AABB GetAABB();
+
+	// 02_10 21枚目 衝突応答
+	void OnCollision(const Enemy* enemy);
+
+	// 02_12 11枚目 デスフラグ
+	bool IsDead() const { return isDead_; }
 
 private:
 	// ワールド変換データ
@@ -150,4 +170,7 @@ private:
 
 	// 02_08 スライド27枚目 壁接触している場合の処理
 	void UpdateOnWall(const CollisionMapInfo& info);
+
+	// 02_12 11枚目 デスフラグ
+	bool isDead_ = false;
 };
