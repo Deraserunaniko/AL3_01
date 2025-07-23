@@ -12,22 +12,23 @@ void Enemy::Initialize(Model* model, Camera* camera, const Vector3& position) {
 
 	assert(model);
 
-
+	// 02_09 7枚目
 	model_ = model;
-
+	// 02_09 7枚目
 	camera_ = camera;
-
+	// 02_09 7枚目
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = position;
-	
+	// 02_09 7枚目 角度調整
 	worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.0f / 2.0f;
 
-	
+	// 02_09 16枚目
 	velocity_ = {-kWalkSpeed, 0, 0};
-	
+	// 02_09 20枚目
 	walkTimer = 0.0f;
 }
 
+// 02_09 スライド5枚目
 void Enemy::UpDate() {
 
 	// 02_09 16枚目 移動
